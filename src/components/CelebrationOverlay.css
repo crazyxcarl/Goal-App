@@ -1,0 +1,112 @@
+.celebration-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, #1a0533 0%, #0a0e27 70%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* Confetti */
+.confetti-piece {
+  position: absolute;
+  top: -24px;
+  border-radius: 3px;
+  animation: confettiFall linear infinite;
+  opacity: 0.9;
+}
+
+.confetti-piece.circle {
+  border-radius: 50%;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-24px) rotate(0deg);
+    opacity: 1;
+  }
+  85% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(110vh) rotate(680deg);
+    opacity: 0;
+  }
+}
+
+/* Content */
+.celebration-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  z-index: 10;
+  text-align: center;
+  padding: 2rem;
+  cursor: default;
+}
+
+.celebration-emoji {
+  font-size: 9rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 40px rgba(255, 215, 0, 0.9));
+}
+
+.celebration-title {
+  font-size: 3.5rem;
+  font-weight: 900;
+  letter-spacing: 4px;
+  margin: 0;
+  background: linear-gradient(90deg, #ffd700, #ff6b35, #ff3860, #ffd700);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmerText 2s linear infinite;
+}
+
+@keyframes shimmerText {
+  0% { background-position: 0% center; }
+  100% { background-position: 300% center; }
+}
+
+.celebration-name {
+  font-size: 5rem;
+  font-weight: 900;
+  letter-spacing: 6px;
+  color: #ffffff;
+  margin: 0;
+  text-shadow:
+    0 0 40px rgba(0, 212, 255, 1),
+    0 0 80px rgba(0, 212, 255, 0.6),
+    0 0 120px rgba(0, 212, 255, 0.3);
+}
+
+.celebration-rank {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  border: 2px solid rgba(0, 255, 136, 0.6);
+  border-radius: 50px;
+  padding: 0.75rem 2.5rem;
+  background: rgba(0, 255, 136, 0.1);
+  color: #00ff88;
+}
+
+.celebration-tap {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.celebration-tap:hover {
+  color: rgba(255, 255, 255, 0.7);
+}

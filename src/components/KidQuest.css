@@ -1,0 +1,491 @@
+.kid-quest {
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+.quest-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.back-button {
+  background: rgba(255, 56, 96, 0.2);
+  border-color: var(--danger);
+}
+
+.back-button:hover {
+  background: rgba(255, 56, 96, 0.3);
+}
+
+.quest-title {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.quest-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  overflow-y: auto;
+  padding-right: 1rem;
+}
+
+.quest-section {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-height: 100%;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  margin: 0;
+}
+
+.section-description {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Task Grid */
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.task-item:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: var(--accent-primary);
+  transform: translateX(5px);
+}
+
+.task-item.completed {
+  background: rgba(0, 255, 136, 0.1);
+  border-color: var(--success);
+}
+
+.task-item.completed .task-checkbox {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.task-checkbox {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.task-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.task-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.task-progress span {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Food Selections */
+.food-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.food-category h3 {
+  font-size: 1.1rem;
+  color: var(--accent-primary);
+  margin-bottom: 0.75rem;
+}
+
+.food-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.food-option {
+  padding: 0.75rem 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 25px;
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.food-option:hover {
+  background: rgba(0, 212, 255, 0.1);
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+}
+
+.food-option.selected {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+}
+
+/* Food Wizard */
+.food-wizard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.food-wizard-header .section-title {
+  margin: 0;
+}
+
+.food-optional-note {
+  font-size: 0.75rem;
+  color: var(--accent-gold);
+  margin: 0.2rem 0 0 0;
+  font-weight: 600;
+}
+
+.food-step-dots {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
+}
+
+.step-dot.active {
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary);
+  width: 24px;
+  border-radius: 5px;
+}
+
+.step-dot.done {
+  background: var(--success);
+}
+
+.food-step-body {
+  min-height: 160px;
+}
+
+.food-step-label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.food-step-label h3 {
+  font-size: 1.3rem;
+  color: var(--accent-primary);
+  margin: 0;
+}
+
+.food-picked {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  background: rgba(255, 215, 0, 0.12);
+  border-radius: 20px;
+  padding: 0.15rem 0.6rem;
+}
+
+.school-lunch-options {
+  display: flex;
+  gap: 1rem;
+}
+
+.school-lunch-btn {
+  flex: 1;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.view-menu-btn {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.7rem;
+  font-size: 0.95rem;
+  background: linear-gradient(135deg, #2c5364, #203a43);
+  box-shadow: 0 4px 15px rgba(0, 100, 150, 0.3);
+}
+
+/* School Menu Modal */
+.menu-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.menu-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  max-width: 90vw;
+}
+
+.menu-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  padding: 0.35rem 0.75rem;
+}
+
+.menu-zoom-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1.1rem;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-zoom-btn:hover {
+  background: rgba(0, 212, 255, 0.25);
+  border-color: var(--accent-primary);
+}
+
+.menu-zoom-reset {
+  font-size: 0.95rem;
+}
+
+.menu-zoom-label {
+  min-width: 46px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.menu-viewport {
+  width: 80vw;
+  height: 76vh;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.menu-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  user-select: none;
+  transition: transform 0.05s linear;
+}
+
+.menu-close-btn {
+  padding: 0.65rem 2.5rem;
+  font-size: 1rem;
+}
+
+.menu-error {
+  color: var(--danger);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.food-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.food-nav-btn {
+  padding: 0.65rem 1.5rem;
+  font-size: 0.95rem;
+}
+
+.food-step-counter {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.food-limit {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.school-lunch-btn {
+  font-size: 1rem;
+}
+
+/* Goals Band — full-width bar below tasks & fuel */
+.goal-band {
+  grid-column: 1 / -1;
+  padding: 1.25rem 2rem;
+  gap: 0.85rem;
+}
+
+.goal-band-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.goal-band-header .section-title {
+  margin: 0;
+}
+
+.goal-band-count {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.goal-band-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.goal-band-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.goal-band-item:hover {
+  background: rgba(255, 215, 0, 0.08);
+  border-color: var(--accent-gold);
+}
+
+.goal-band-item.completed {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: var(--accent-gold);
+}
+
+.goal-band-item.completed .task-checkbox {
+  background: var(--accent-gold);
+  border-color: var(--accent-gold);
+  color: #000;
+}
+
+/* Weekend Goals */
+.goals-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.goal-display-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.goal-star {
+  font-size: 1.2rem;
+}
+
+/* Save Button */
+.save-button {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 1.25rem;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .quest-content {
+    grid-template-columns: 1fr;
+  }
+
+  .task-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,142 @@
+.kid-selections {
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+.selections-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.selections-title {
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.selections-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--text-dim);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.selections-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.sel-card {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sel-card-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--accent-primary);
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+/* Food sections */
+.sel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sel-section-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sel-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sel-tag {
+  background: rgba(0, 212, 255, 0.12);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 20px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.35rem 1rem;
+}
+
+.sel-tag-school {
+  background: rgba(0, 255, 136, 0.12);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+/* Task list */
+.sel-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sel-task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.sel-task-item.done {
+  background: rgba(0, 255, 136, 0.08);
+  border-color: rgba(0, 255, 136, 0.25);
+}
+
+.sel-task-check {
+  font-size: 1rem;
+  min-width: 22px;
+}
+
+.sel-task-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sel-task-summary {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 1200px) {
+  .selections-grid {
+    grid-template-columns: 1fr;
+  }
+}
