@@ -71,7 +71,6 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
     if (!window.electronAPI) return;
     setSaving(true);
     await window.electronAPI.writeExcelFood(food);
-    if (onReload) await onReload();
     setSaving(false);
   };
 
@@ -175,10 +174,7 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
       return typeof i === 'string' ? { name: i, inStock: true } : i;
     });
     setLocalFood(updated);
-    // Write directly without reload — local state is already correct
-    if (window.electronAPI) {
-      await window.electronAPI.writeExcelFood(updated);
-    }
+    await writeFoodToExcel(updated);
   };
 
   const handleReloadFromExcel = async () => {
