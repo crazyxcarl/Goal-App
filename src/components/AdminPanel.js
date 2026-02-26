@@ -175,7 +175,10 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
       return typeof i === 'string' ? { name: i, inStock: true } : i;
     });
     setLocalFood(updated);
-    await writeFoodToExcel(updated);
+    // Write directly without reload — local state is already correct
+    if (window.electronAPI) {
+      await window.electronAPI.writeExcelFood(updated);
+    }
   };
 
   const handleReloadFromExcel = async () => {
@@ -388,7 +391,7 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
                   {(localRewards[kid] || []).length === 0 && (
                     <p className="editor-empty">No rewards</p>
                   )}
-                  {(localRewards[kid] || []).map(reward => (
+                  {(localRewards[kid] || []).slice().sort((a, b) => a.name.localeCompare(b.name)).map(reward => (
                     <div key={reward.id} className="task-editor-item reward-editor-item">
                       <span className="reward-editor-name">{reward.name}</span>
                       <span className="reward-editor-cost">✨ {reward.cost}</span>
@@ -453,7 +456,11 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
                   {(localGoals[kid] || []).length === 0 && (
                     <p className="editor-empty">No goals</p>
                   )}
-                  {(localGoals[kid] || []).map(goal => {
+                  {(localGoals[kid] || []).slice().sort((a, b) => {
+                    const aName = typeof a === 'string' ? a : a.name;
+                    const bName = typeof b === 'string' ? b : b.name;
+                    return aName.localeCompare(bName);
+                  }).map(goal => {
                     const gName = typeof goal === 'string' ? goal : goal.name;
                     const gCredits = typeof goal === 'string' ? null : goal.credits;
                     return (
@@ -574,7 +581,7 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
                         {(localTasks[taskMode]?.[kid] || []).length === 0 && (
                           <p className="editor-empty">No tasks</p>
                         )}
-                        {(localTasks[taskMode]?.[kid] || []).map(task => (
+                        {(localTasks[taskMode]?.[kid] || []).slice().sort((a, b) => a.localeCompare(b)).map(task => (
                           <div key={task} className="task-editor-item">
                             <span>{task}</span>
                             <button
@@ -621,7 +628,11 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
                         {(localGoals[kid] || []).length === 0 && (
                           <p className="editor-empty">No goals</p>
                         )}
-                        {(localGoals[kid] || []).map(goal => {
+                        {(localGoals[kid] || []).slice().sort((a, b) => {
+                          const aName = typeof a === 'string' ? a : a.name;
+                          const bName = typeof b === 'string' ? b : b.name;
+                          return aName.localeCompare(bName);
+                        }).map(goal => {
                           const gName = typeof goal === 'string' ? goal : goal.name;
                           const gCredits = typeof goal === 'string' ? null : goal.credits;
                           return (
@@ -692,7 +703,11 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
                 {(localFood[foodCategory] || []).length === 0 && (
                   <p className="editor-empty">No items</p>
                 )}
-                {(localFood[foodCategory] || []).map(item => {
+                {(localFood[foodCategory] || []).slice().sort((a, b) => {
+                  const aName = typeof a === 'string' ? a : a.name;
+                  const bName = typeof b === 'string' ? b : b.name;
+                  return aName.localeCompare(bName);
+                }).map(item => {
                   const itemName = typeof item === 'string' ? item : item.name;
                   const inStock  = typeof item === 'string' ? true : item.inStock;
                   return (

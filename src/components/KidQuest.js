@@ -63,7 +63,7 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
     school_lunch:          saved.school_lunch || false,
   });
 
-  const taskList = data.tasks?.[mode]?.[kid] || [];
+  const taskList = (data.tasks?.[mode]?.[kid] || []).slice().sort((a, b) => a.localeCompare(b));
   const food = data.food || {};
 
   const toggleFood = (category, item, limit) => {
@@ -396,6 +396,7 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
                       {(food[current.key] || [])
                         .filter(i => typeof i === 'string' || i.inStock)
                         .map(i => typeof i === 'string' ? i : i.name)
+                        .sort((a, b) => a.localeCompare(b))
                         .map(item => (
                         <button
                           key={item}
