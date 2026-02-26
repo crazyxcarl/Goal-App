@@ -118,14 +118,15 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
     if (mode === 'morning') {
       const f = food;
       const sel = selections;
+      const inStockCount = (arr) => (arr || []).filter(i => typeof i === 'string' || i.inStock).length;
       const foodChecks = [
-        (f.breakfast || []).length === 0            || Object.values(sel.breakfast).some(v => v),
-        (f.special_breakfast || []).length === 0    || Object.values(sel.special_breakfast).some(v => v),
-        (f.snacks || []).length === 0               || Object.values(sel.snacks).some(v => v),
+        inStockCount(f.breakfast) === 0            || Object.values(sel.breakfast).some(v => v),
+        inStockCount(f.special_breakfast) === 0    || Object.values(sel.special_breakfast).some(v => v),
+        inStockCount(f.snacks) === 0               || Object.values(sel.snacks).some(v => v),
         sel.school_lunch || (
-          ((f.lunch_main || []).length === 0            || Object.values(sel.lunch_main).some(v => v)) &&
-          ((f.lunch_sides_healthy || []).length === 0   || Object.values(sel.lunch_sides_healthy).some(v => v)) &&
-          ((f.lunch_sides_unhealthy || []).length === 0 || Object.values(sel.lunch_sides_unhealthy).some(v => v))
+          (inStockCount(f.lunch_main) === 0            || Object.values(sel.lunch_main).some(v => v)) &&
+          (inStockCount(f.lunch_sides_healthy) === 0   || Object.values(sel.lunch_sides_healthy).some(v => v)) &&
+          (inStockCount(f.lunch_sides_unhealthy) === 0 || Object.values(sel.lunch_sides_unhealthy).some(v => v))
         ),
       ];
       allFoodComplete = foodChecks.every(Boolean);
@@ -314,7 +315,7 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
               { key: 'lunch_sides_healthy',   label: '🥦 Healthy Sides',      limit: 3 },
               { key: 'lunch_sides_unhealthy', label: '🍟 Treat Side',          limit: 1 },
             ] : []),
-          ].filter(s => s.key === 'school_lunch' || (food[s.key] || []).length > 0);
+          ].filter(s => s.key === 'school_lunch' || (food[s.key] || []).filter(i => typeof i === 'string' || i.inStock).length > 0);
 
           const step = foodStep >= steps.length ? steps.length - 1 : foodStep;
           const current = steps[step];
@@ -392,7 +393,10 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
                     </div>
                   ) : (
                     <div className="food-options">
-                      {(food[current.key] || []).map(item => (
+                      {(food[current.key] || [])
+                        .filter(i => typeof i === 'string' || i.inStock)
+                        .map(i => typeof i === 'string' ? i : i.name)
+                        .map(item => (
                         <button
                           key={item}
                           className={`food-option ${selections[current.key]?.[item] ? 'selected' : ''}`}

@@ -85,12 +85,11 @@ function parseExcelData(filePath) {
         if (nameCol === -1) return;
         const invCol = nameCol + 1;
         result.food[key] = rows.slice(1)
-          .filter(r => {
-            const n = (r[nameCol] || '').toString().trim();
-            const inv = (r[invCol] || '').toString().toLowerCase();
-            return n !== '' && inv === 'yes';
-          })
-          .map(r => r[nameCol].toString().trim());
+          .filter(r => (r[nameCol] || '').toString().trim() !== '')
+          .map(r => ({
+            name: r[nameCol].toString().trim(),
+            inStock: (r[invCol] || '').toString().toLowerCase() === 'yes',
+          }));
       });
     }
 
@@ -295,7 +294,11 @@ ipcMain.handle('write-excel-food', async (event, food) => {
     for (let i = 0; i < maxLen; i++) {
       rows.push(categories.flatMap(c => {
         const item = (food[c.key] || [])[i];
-        return item ? [item, 'yes'] : ['', ''];
+        if (!item) return ['', ''];
+        // Support both object { name, inStock } and legacy plain string
+        const name = typeof item === 'string' ? item : item.name;
+        const inv  = typeof item === 'string' ? 'yes' : (item.inStock ? 'yes' : 'no');
+        return [name, inv];
       }));
     }
 

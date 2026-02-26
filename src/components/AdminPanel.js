@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaTrash, FaPlus, FaTimes, FaSync, FaKey } from 'react-icons/fa';
+import { FaArrowLeft, FaTrash, FaPlus, FaTimes, FaSync, FaKey, FaCheck, FaBan } from 'react-icons/fa';
 import './AdminPanel.css';
 
 const toTimeString = (hour, min) =>
@@ -149,7 +149,7 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
     if (!text) return;
     const updated = JSON.parse(JSON.stringify(localFood));
     if (!updated[foodCategory]) updated[foodCategory] = [];
-    updated[foodCategory] = [...updated[foodCategory], text];
+    updated[foodCategory] = [...updated[foodCategory], { name: text, inStock: true }];
     setLocalFood(updated);
     setFoodInput('');
     await writeFoodToExcel(updated);
@@ -157,7 +157,23 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
 
   const removeFoodItem = async (item) => {
     const updated = JSON.parse(JSON.stringify(localFood));
-    updated[foodCategory] = (updated[foodCategory] || []).filter(i => i !== item);
+    const itemName = typeof item === 'string' ? item : item.name;
+    updated[foodCategory] = (updated[foodCategory] || []).filter(i =>
+      (typeof i === 'string' ? i : i.name) !== itemName
+    );
+    setLocalFood(updated);
+    await writeFoodToExcel(updated);
+  };
+
+  const toggleFoodInventory = async (item) => {
+    const updated = JSON.parse(JSON.stringify(localFood));
+    updated[foodCategory] = (updated[foodCategory] || []).map(i => {
+      const iName = typeof i === 'string' ? i : i.name;
+      if (iName === (typeof item === 'string' ? item : item.name)) {
+        return { name: iName, inStock: !(typeof i === 'string' ? true : i.inStock) };
+      }
+      return typeof i === 'string' ? { name: i, inStock: true } : i;
+    });
     setLocalFood(updated);
     await writeFoodToExcel(updated);
   };
@@ -676,18 +692,30 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
                 {(localFood[foodCategory] || []).length === 0 && (
                   <p className="editor-empty">No items</p>
                 )}
-                {(localFood[foodCategory] || []).map(item => (
-                  <div key={item} className="task-editor-item">
-                    <span>{item}</span>
-                    <button
-                      className="editor-remove-btn"
-                      onClick={() => removeFoodItem(item)}
-                      disabled={saving}
-                    >
-                      <FaTimes />
-                    </button>
-                  </div>
-                ))}
+                {(localFood[foodCategory] || []).map(item => {
+                  const itemName = typeof item === 'string' ? item : item.name;
+                  const inStock  = typeof item === 'string' ? true : item.inStock;
+                  return (
+                    <div key={itemName} className={`task-editor-item ${!inStock ? 'food-item-out-of-stock' : ''}`}>
+                      <button
+                        className={`food-stock-toggle ${inStock ? 'in-stock' : 'out-of-stock'}`}
+                        onClick={() => toggleFoodInventory(item)}
+                        disabled={saving}
+                        title={inStock ? 'In stock — click to mark out of stock' : 'Out of stock — click to mark in stock'}
+                      >
+                        {inStock ? <FaCheck /> : <FaBan />}
+                      </button>
+                      <span className="food-item-name">{itemName}</span>
+                      <button
+                        className="editor-remove-btn"
+                        onClick={() => removeFoodItem(item)}
+                        disabled={saving}
+                      >
+                        <FaTimes />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="editor-add-row">
