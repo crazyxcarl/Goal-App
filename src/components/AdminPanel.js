@@ -71,6 +71,9 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
     if (!window.electronAPI) return;
     setSaving(true);
     await window.electronAPI.writeExcelFood(food);
+    // Sync parent state so KidQuest and re-mounts see the update
+    // (save-data handler strips food, so this only updates in-memory state)
+    onSave({ ...data, food });
     setSaving(false);
   };
 
