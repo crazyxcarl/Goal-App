@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 import Dashboard from './components/Dashboard';
@@ -15,6 +15,7 @@ function App() {
   const [selectedKid, setSelectedKid] = useState(null);
   const [mode, setMode] = useState('morning');
   const [modeOverride, setModeOverride] = useState(null);
+  const prevModeRef = useRef(null);
 
   useEffect(() => {
     loadData();
@@ -68,7 +69,7 @@ function App() {
 
   const updateMode = () => {
     if (!data) return;
-    
+
     const now = new Date();
     const config = data.config;
     const dayOfWeek = now.getDay();
@@ -79,14 +80,38 @@ function App() {
     const isPreAM = hour < config.am_hour || (hour === config.am_hour && minute < config.am_min);
 
     const isWeekend = (dayOfWeek === 5 && isPostPM) || dayOfWeek === 6 || (dayOfWeek === 0 && !isPostPM);
-    
+
+    let newMode;
     if (isWeekend) {
-      setMode('weekend');
+      newMode = 'weekend';
     } else {
-      const isMorning = ([0, 1, 2, 3, 4].includes(dayOfWeek) && isPostPM) || 
+      const isMorning = ([0, 1, 2, 3, 4].includes(dayOfWeek) && isPostPM) ||
                         ([1, 2, 3, 4, 5].includes(dayOfWeek) && isPreAM);
-      setMode(isMorning ? 'morning' : 'afternoon');
+      newMode = isMorning ? 'morning' : 'afternoon';
     }
+
+    // Clear food selections when transitioning into afternoon
+    if (prevModeRef.current !== null && prevModeRef.current !== 'afternoon' && newMode === 'afternoon') {
+      const updated = { ...data, choices: { ...data.choices } };
+      data.kids.forEach(kid => {
+        if (updated.choices[kid]) {
+          updated.choices[kid] = {
+            ...updated.choices[kid],
+            breakfast: [],
+            special_breakfast: [],
+            snacks: [],
+            lunch_main: [],
+            lunch_sides_healthy: [],
+            lunch_sides_unhealthy: [],
+            school_lunch: false,
+          };
+        }
+      });
+      saveData(updated);
+    }
+
+    prevModeRef.current = newMode;
+    setMode(newMode);
   };
 
   const openKidQuest = (kid) => {
@@ -162,6 +187,7 @@ function App() {
           <GoalRoom
             key="goals"
             data={data}
+            onSave={saveData}
             onBack={() => setCurrentView('dashboard')}
           />
         )}

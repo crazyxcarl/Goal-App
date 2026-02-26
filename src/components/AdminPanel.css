@@ -6,6 +6,7 @@
   flex-direction: column;
   position: relative;
   z-index: 2;
+  overflow-y: auto;
 }
 
 .admin-header {
@@ -23,11 +24,9 @@
 }
 
 .admin-content {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  overflow-y: auto;
 }
 
 .admin-grid {
@@ -184,6 +183,8 @@
 /* Quest Timing */
 .settings-zone {
   padding: 2rem;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .settings-zone h2 {
@@ -458,15 +459,17 @@
 
 .task-editor-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
   margin-bottom: 1rem;
+  width: 100%;
 }
 
 .task-editor-col {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .task-editor-kid {
@@ -476,6 +479,7 @@
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: center;
 }
 
 .task-editor-list {
@@ -537,6 +541,7 @@
 
 .editor-input {
   flex: 1;
+  min-width: 0;
   background: rgba(0, 212, 255, 0.07);
   border: 1px solid rgba(0, 212, 255, 0.25);
   border-radius: 8px;
@@ -577,6 +582,10 @@
 
 .reward-editor-name {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .reward-editor-cost {
@@ -595,6 +604,28 @@
 .reward-cost-field {
   flex: 0 0 64px !important;
   text-align: center;
+}
+
+/* Change Password */
+.password-change-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 360px;
+}
+
+.pw-message {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.pw-message.error {
+  color: var(--danger);
+}
+
+.pw-message.success {
+  color: var(--success);
 }
 
 /* Danger Zone */

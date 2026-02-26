@@ -44,15 +44,23 @@ function parseExcelData(filePath) {
             .filter(v => v !== '');
         }
 
-        // Goal column (weekend sheet only): contains kid name AND "Goal"
+        // Goal column (weekend sheet only): header is exactly "<Kid> Goal"
         if (mode === 'weekend') {
           const goalCol = header.findIndex(h =>
-            h && h.toString().includes(kid) && h.toString().includes('Goal')
+            h && h.toString().trim() === `${kid} Goal`
+          );
+          const creditCol = header.findIndex(h =>
+            h && h.toString().trim() === `${kid} Goal Credits`
           );
           if (goalCol !== -1) {
             result.goals[kid] = rows.slice(1)
-              .map(r => (r[goalCol] || '').toString().trim())
-              .filter(v => v !== '');
+              .map(r => {
+                const name = (r[goalCol] || '').toString().trim();
+                if (!name) return null;
+                const credits = creditCol !== -1 ? parseInt(r[creditCol]) : NaN;
+                return !isNaN(credits) ? { name, credits } : name;
+              })
+              .filter(v => v !== null);
           }
         }
       });
@@ -169,7 +177,7 @@ ipcMain.handle('load-data', async () => {
     redeemed:     { Jackson: [], Natalie: [], Brooke: [] },
     goal_log:     { Jackson: [], Natalie: [], Brooke: [] },
     completion_log: { Jackson: [], Natalie: [], Brooke: [] },
-    config: { am_hour: 7, am_min: 20, pm_hour: 19, pm_min: 0, credits_per_goal: 1 },
+    config: { am_hour: 7, am_min: 20, pm_hour: 19, pm_min: 0, credits_per_goal: 1, password: '1234' },
   };
 
   let savedData;
@@ -218,14 +226,16 @@ ipcMain.handle('write-excel-tasks', async (event, { tasks, goals }) => {
       let header, maxLen, buildRow;
 
       if (mode === 'weekend') {
-        header = KIDS.flatMap(k => [k, `${k} Goal`]);
+        header = KIDS.flatMap(k => [k, `${k} Goal`, `${k} Goal Credits`]);
         maxLen = Math.max(0, ...KIDS.map(k =>
           Math.max((modeTasks[k] || []).length, (goals[k] || []).length)
         ));
-        buildRow = i => KIDS.flatMap(k => [
-          (modeTasks[k] || [])[i] || '',
-          (goals[k] || [])[i] || '',
-        ]);
+        buildRow = i => KIDS.flatMap(k => {
+          const rawGoal = (goals[k] || [])[i];
+          const goalName = !rawGoal ? '' : (typeof rawGoal === 'string' ? rawGoal : rawGoal.name || '');
+          const goalCredits = rawGoal && typeof rawGoal === 'object' ? rawGoal.credits : '';
+          return [(modeTasks[k] || [])[i] || '', goalName, goalCredits];
+        });
       } else {
         header = KIDS.map(k => k);
         maxLen = Math.max(0, ...KIDS.map(k => (modeTasks[k] || []).length));

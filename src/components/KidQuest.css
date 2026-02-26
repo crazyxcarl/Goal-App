@@ -442,6 +442,15 @@
   color: #000;
 }
 
+.goal-credits-badge {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  white-space: nowrap;
+  padding-left: 0.25rem;
+}
+
 /* Weekend Goals */
 .goals-display {
   display: flex;

@@ -4,7 +4,7 @@ import { FaArrowLeft, FaSave, FaCheck } from 'react-icons/fa';
 import CelebrationOverlay from './CelebrationOverlay';
 import './KidQuest.css';
 
-const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐹', Brooke: '🐱' };
+const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐿️', Brooke: '🐱' };
 
 
 const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
@@ -60,7 +60,6 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
     lunch_sides_unhealthy: toMap(saved.lunch_sides_unhealthy),
     snacks:                toMap(saved.snacks),
     tasks:                 saved.checklist || {},
-    goals:                 saved.goals || {},
     school_lunch:          saved.school_lunch || false,
   });
 
@@ -85,13 +84,6 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
     }));
   };
 
-  const handleGoalToggle = (goal) => {
-    setSelections(prev => ({
-      ...prev,
-      goals: { ...prev.goals, [goal]: !prev.goals[goal] }
-    }));
-  };
-
   const handleSave = () => {
     const newData = { ...data };
     newData.choices = { ...data.choices };
@@ -106,7 +98,6 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
       lunch_sides_unhealthy: Object.keys(selections.lunch_sides_unhealthy).filter(k => selections.lunch_sides_unhealthy[k]),
       snacks:                Object.keys(selections.snacks).filter(k => selections.snacks[k]),
       checklist:             selections.tasks,
-      goals:                 selections.goals,
       school_lunch:          selections.school_lunch,
     };
 
@@ -140,11 +131,7 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
       allFoodComplete = foodChecks.every(Boolean);
     }
 
-    const goalList = data.goals?.[kid] || [];
-    const allGoalsComplete = mode !== 'weekend' || goalList.length === 0 ||
-      goalList.every(g => selections.goals[g]);
-
-    const allComplete = allTasksComplete && allFoodComplete && allGoalsComplete;
+    const allComplete = allTasksComplete && allFoodComplete;
 
     if (allComplete && (isOverride || !newData.completion_times[kid])) {
       if (isOverride) {
@@ -164,13 +151,6 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
         ...newData.completion_log[kid],
         { date: today, time: now, mode },
       ];
-
-      if (mode === 'morning' || mode === 'weekend') {
-        const creditsPerGoal = data.config?.credits_per_goal ?? 1;
-        const completedGoalCount = goalList.filter(g => selections.goals?.[g]).length;
-        const creditsToAward = goalList.length === 0 ? creditsPerGoal : completedGoalCount * creditsPerGoal;
-        newData.credits[kid] = (newData.credits[kid] || 0) + creditsToAward;
-      }
 
       onSave(newData);
       setShowCelebration(true);
@@ -442,53 +422,6 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
                 >
                   NEXT →
                 </button>
-              </div>
-            </motion.div>
-          );
-        })()}
-
-        {/* Goals — shown on all modes */}
-        {(data.goals?.[kid] || []).length > 0 && (() => {
-          const goalList = data.goals[kid];
-          const completedGoals = goalList.filter(g => selections.goals[g]).length;
-          return (
-            <motion.div
-              className="quest-section glass-card goal-band"
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="goal-band-header">
-                <h2 className="section-title">🎯 GOALS</h2>
-                <span className="goal-band-count">{completedGoals} / {goalList.length} Complete</span>
-              </div>
-
-              <div className="goal-band-list">
-                {goalList.map((goal, i) => (
-                  <motion.div
-                    key={goal}
-                    className={`goal-band-item ${selections.goals[goal] ? 'completed' : ''}`}
-                    initial={{ x: -10, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: i * 0.04 }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleGoalToggle(goal)}
-                  >
-                    <div className="task-checkbox">
-                      {selections.goals[goal] && <FaCheck />}
-                    </div>
-                    <span className="task-text">{goal}</span>
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="progress-bar">
-                <motion.div
-                  className="progress-fill"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(completedGoals / goalList.length) * 100}%` }}
-                />
               </div>
             </motion.div>
           );

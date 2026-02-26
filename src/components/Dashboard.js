@@ -3,10 +3,29 @@ import { motion } from 'framer-motion';
 import { FaTrophy, FaBullseye, FaCog } from 'react-icons/fa';
 import './Dashboard.css';
 
-const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐹', Brooke: '🐱' };
+const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐿️', Brooke: '🐱' };
 
 const Dashboard = ({ data, mode, onKidSelect, onStoreSelect, onSelectionsSelect, onTrophyRoom, onGoalRoom, onAdminPanel }) => {
   const [countdown, setCountdown] = useState('');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+
+  const handleAdminClick = () => {
+    setPasswordInput('');
+    setPasswordError(false);
+    setShowPasswordModal(true);
+  };
+
+  const handlePasswordSubmit = () => {
+    if (passwordInput === (data.config?.password || '1234')) {
+      setShowPasswordModal(false);
+      onAdminPanel();
+    } else {
+      setPasswordError(true);
+      setPasswordInput('');
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(updateCountdown, 1000);
@@ -110,10 +129,33 @@ const Dashboard = ({ data, mode, onKidSelect, onStoreSelect, onSelectionsSelect,
           </div>
         </motion.div>
 
-        <button className="icon-button admin-button" onClick={onAdminPanel}>
+        <button className="icon-button admin-button" onClick={handleAdminClick}>
           <FaCog /> Admin
         </button>
       </div>
+
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div className="password-overlay" onClick={() => setShowPasswordModal(false)}>
+          <div className="password-modal glass-card" onClick={e => e.stopPropagation()}>
+            <h2>🔒 Admin Access</h2>
+            <input
+              className="password-input"
+              type="password"
+              placeholder="Enter password"
+              value={passwordInput}
+              onChange={e => { setPasswordInput(e.target.value); setPasswordError(false); }}
+              onKeyDown={e => e.key === 'Enter' && handlePasswordSubmit()}
+              autoFocus
+            />
+            {passwordError && <p className="password-error">Incorrect password</p>}
+            <div className="password-actions">
+              <button className="neon-button" onClick={handlePasswordSubmit}>Unlock</button>
+              <button className="icon-button" onClick={() => setShowPasswordModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Kid Cards Grid */}
       <motion.div

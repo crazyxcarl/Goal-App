@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaTrash, FaPlus, FaTimes, FaSync } from 'react-icons/fa';
+import { FaArrowLeft, FaTrash, FaPlus, FaTimes, FaSync, FaKey } from 'react-icons/fa';
 import './AdminPanel.css';
 
 const toTimeString = (hour, min) =>
@@ -28,9 +28,17 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
   const [foodInput,    setFoodInput]    = useState('');
   const [saving,       setSaving]       = useState(false);
 
+  // Change Password state
+  const [currentPw,  setCurrentPw]  = useState('');
+  const [newPw,      setNewPw]      = useState('');
+  const [confirmPw,  setConfirmPw]  = useState('');
+  const [pwMessage,  setPwMessage]  = useState(null); // { type: 'error'|'success', text }
+
+
   // Goals editor state (weekend)
   const [localGoals,      setLocalGoals]      = useState(() => JSON.parse(JSON.stringify(data.goals   || {})));
   const [goalInputs,      setGoalInputs]      = useState({});
+  const [goalCreditInputs, setGoalCreditInputs] = useState({});
   const [weekendSubTab,   setWeekendSubTab]   = useState('tasks'); // 'tasks' | 'goals'
 
   // Rewards editor state
@@ -116,18 +124,22 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
 
   const addGoal = async (kid) => {
     const text = (goalInputs[kid] || '').trim();
+    const credits = parseInt(goalCreditInputs[kid]) || 1;
     if (!text) return;
     const updated = JSON.parse(JSON.stringify(localGoals));
     if (!updated[kid]) updated[kid] = [];
-    updated[kid] = [...updated[kid], text];
+    updated[kid] = [...updated[kid], { name: text, credits }];
     setLocalGoals(updated);
     setGoalInputs(prev => ({ ...prev, [kid]: '' }));
+    setGoalCreditInputs(prev => ({ ...prev, [kid]: '' }));
     await writeGoalsToExcel(updated);
   };
 
-  const removeGoal = async (kid, goalText) => {
+  const removeGoal = async (kid, goalName) => {
     const updated = JSON.parse(JSON.stringify(localGoals));
-    updated[kid] = (updated[kid] || []).filter(g => g !== goalText);
+    updated[kid] = (updated[kid] || []).filter(g =>
+      (typeof g === 'string' ? g : g.name) !== goalName
+    );
     setLocalGoals(updated);
     await writeGoalsToExcel(updated);
   };
@@ -154,6 +166,28 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
     if (onReload) await onReload();
   };
 
+  const handleChangePassword = () => {
+    const current = data.config?.password || '1234';
+    if (currentPw !== current) {
+      setPwMessage({ type: 'error', text: 'Current password is incorrect' });
+      return;
+    }
+    if (!newPw) {
+      setPwMessage({ type: 'error', text: 'New password cannot be empty' });
+      return;
+    }
+    if (newPw !== confirmPw) {
+      setPwMessage({ type: 'error', text: 'New passwords do not match' });
+      return;
+    }
+    const newData = { ...data, config: { ...data.config, password: newPw } };
+    onSave(newData);
+    setCurrentPw('');
+    setNewPw('');
+    setConfirmPw('');
+    setPwMessage({ type: 'success', text: 'Password updated!' });
+  };
+
   const afternoonTime = toTimeString(data.config.am_hour, data.config.am_min);
   const morningTime   = toTimeString(data.config.pm_hour, data.config.pm_min);
 
@@ -173,13 +207,6 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
       newData.config.pm_hour = h;
       newData.config.pm_min = m;
     }
-    onSave(newData);
-  };
-
-  const handleCreditsPerGoalChange = (delta) => {
-    const current = data.config?.credits_per_goal ?? 1;
-    const updated = Math.max(1, current + delta);
-    const newData = { ...data, config: { ...data.config, credits_per_goal: updated } };
     onSave(newData);
   };
 
@@ -327,32 +354,6 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
           </div>
         </motion.div>
 
-        {/* Credits Per Goal */}
-        <motion.div
-          className="settings-zone glass-card"
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.38 }}
-        >
-          <h2>⭐ CREDITS PER GOAL</h2>
-          <p className="settings-desc">How many credits each completed goal earns. If no goals are set, this is awarded flat per quest.</p>
-          <div className="admin-control">
-            <button
-              className="control-btn minus"
-              onClick={() => handleCreditsPerGoalChange(-1)}
-            >
-              −
-            </button>
-            <span className="control-value">{data.config?.credits_per_goal ?? 1}</span>
-            <button
-              className="control-btn plus"
-              onClick={() => handleCreditsPerGoalChange(1)}
-            >
-              +
-            </button>
-          </div>
-        </motion.div>
-
         {/* Reward Store Editor */}
         <motion.div
           className="settings-zone glass-card"
@@ -436,26 +437,41 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
                   {(localGoals[kid] || []).length === 0 && (
                     <p className="editor-empty">No goals</p>
                   )}
-                  {(localGoals[kid] || []).map(goal => (
-                    <div key={goal} className="task-editor-item">
-                      <span>{goal}</span>
-                      <button
-                        className="editor-remove-btn"
-                        onClick={() => removeGoal(kid, goal)}
-                        disabled={saving}
-                      >
-                        <FaTimes />
-                      </button>
-                    </div>
-                  ))}
+                  {(localGoals[kid] || []).map(goal => {
+                    const gName = typeof goal === 'string' ? goal : goal.name;
+                    const gCredits = typeof goal === 'string' ? null : goal.credits;
+                    return (
+                      <div key={gName} className="task-editor-item reward-editor-item">
+                        <span className="reward-editor-name">{gName}</span>
+                        {gCredits !== null && <span className="reward-editor-cost">✨ {gCredits}</span>}
+                        <button
+                          className="editor-remove-btn"
+                          onClick={() => removeGoal(kid, gName)}
+                          disabled={saving}
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
 
-                <div className="editor-add-row">
+                <div className="reward-add-row">
                   <input
                     className="editor-input"
                     placeholder="New goal…"
                     value={goalInputs[kid] || ''}
                     onChange={e => setGoalInputs(prev => ({ ...prev, [kid]: e.target.value }))}
+                    onKeyDown={e => e.key === 'Enter' && addGoal(kid)}
+                    disabled={saving}
+                  />
+                  <input
+                    className="editor-input reward-cost-field"
+                    type="number"
+                    min="1"
+                    placeholder="✨"
+                    value={goalCreditInputs[kid] || ''}
+                    onChange={e => setGoalCreditInputs(prev => ({ ...prev, [kid]: e.target.value }))}
                     onKeyDown={e => e.key === 'Enter' && addGoal(kid)}
                     disabled={saving}
                   />
@@ -589,25 +605,40 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
                         {(localGoals[kid] || []).length === 0 && (
                           <p className="editor-empty">No goals</p>
                         )}
-                        {(localGoals[kid] || []).map(goal => (
-                          <div key={goal} className="task-editor-item">
-                            <span>{goal}</span>
-                            <button
-                              className="editor-remove-btn"
-                              onClick={() => removeGoal(kid, goal)}
-                              disabled={saving}
-                            >
-                              <FaTimes />
-                            </button>
-                          </div>
-                        ))}
+                        {(localGoals[kid] || []).map(goal => {
+                          const gName = typeof goal === 'string' ? goal : goal.name;
+                          const gCredits = typeof goal === 'string' ? null : goal.credits;
+                          return (
+                            <div key={gName} className="task-editor-item reward-editor-item">
+                              <span className="reward-editor-name">{gName}</span>
+                              {gCredits !== null && <span className="reward-editor-cost">✨ {gCredits}</span>}
+                              <button
+                                className="editor-remove-btn"
+                                onClick={() => removeGoal(kid, gName)}
+                                disabled={saving}
+                              >
+                                <FaTimes />
+                              </button>
+                            </div>
+                          );
+                        })}
                       </div>
-                      <div className="editor-add-row">
+                      <div className="reward-add-row">
                         <input
                           className="editor-input"
                           placeholder="New goal…"
                           value={goalInputs[kid] || ''}
                           onChange={e => setGoalInputs(prev => ({ ...prev, [kid]: e.target.value }))}
+                          onKeyDown={e => e.key === 'Enter' && addGoal(kid)}
+                          disabled={saving}
+                        />
+                        <input
+                          className="editor-input reward-cost-field"
+                          type="number"
+                          min="1"
+                          placeholder="✨"
+                          value={goalCreditInputs[kid] || ''}
+                          onChange={e => setGoalCreditInputs(prev => ({ ...prev, [kid]: e.target.value }))}
                           onKeyDown={e => e.key === 'Enter' && addGoal(kid)}
                           disabled={saving}
                         />
@@ -674,6 +705,46 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
               </div>
             </>
           )}
+        </motion.div>
+
+        {/* Change Password */}
+        <motion.div
+          className="settings-zone glass-card"
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.47 }}
+        >
+          <h2><FaKey /> CHANGE PASSWORD</h2>
+          <div className="password-change-form">
+            <input
+              className="editor-input"
+              type="password"
+              placeholder="Current password"
+              value={currentPw}
+              onChange={e => { setCurrentPw(e.target.value); setPwMessage(null); }}
+            />
+            <input
+              className="editor-input"
+              type="password"
+              placeholder="New password"
+              value={newPw}
+              onChange={e => { setNewPw(e.target.value); setPwMessage(null); }}
+            />
+            <input
+              className="editor-input"
+              type="password"
+              placeholder="Confirm new password"
+              value={confirmPw}
+              onChange={e => { setConfirmPw(e.target.value); setPwMessage(null); }}
+              onKeyDown={e => e.key === 'Enter' && handleChangePassword()}
+            />
+            {pwMessage && (
+              <p className={`pw-message ${pwMessage.type}`}>{pwMessage.text}</p>
+            )}
+            <button className="neon-button" onClick={handleChangePassword}>
+              Save Password
+            </button>
+          </div>
         </motion.div>
 
         {/* Danger Zone */}
