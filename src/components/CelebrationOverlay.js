@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import './CelebrationOverlay.css';
 
-const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐹', Brooke: '🐱' };
+const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐿️', Brooke: '🐱' };
 const CONFETTI_COLORS = ['#ffd700', '#00d4ff', '#7b2ff7', '#00ff88', '#ff3860', '#ffaa00', '#ff69b4', '#ffffff'];
 
 const playFanfare = () => {

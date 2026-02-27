@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { FaArrowLeft } from 'react-icons/fa';
 import './StatsRoom.css';
 
-const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐹', Brooke: '🐱' };
+const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐿️', Brooke: '🐱' };
 
 const pad = n => String(n).padStart(2, '0');
 

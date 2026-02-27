@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { FaArrowLeft, FaCheck } from 'react-icons/fa';
 import './RewardStore.css';
 
-const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐹', Brooke: '🐱' };
+const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐿️', Brooke: '🐱' };
 
 const RewardStore = ({ kid, data, onSave, onBack }) => {
   const credits = data.credits[kid] || 0;

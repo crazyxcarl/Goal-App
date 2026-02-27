@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { FaArrowLeft } from 'react-icons/fa';
 import './KidSelections.css';
 
-const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐹', Brooke: '🐱' };
+const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐿️', Brooke: '🐱' };
 
 const KidSelections = ({ kid, data, onBack }) => {
   const choices = data.choices[kid] || {};

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { FaArrowLeft, FaTrophy } from 'react-icons/fa';
 import './TrophyRoom.css';
 
-const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐹', Brooke: '🐱' };
+const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐿️', Brooke: '🐱' };
 
 const TrophyRoom = ({ data, onBack }) => {
   const containerVariants = {
