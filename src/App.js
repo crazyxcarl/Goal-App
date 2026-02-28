@@ -207,6 +207,7 @@ function App() {
             key="selections"
             kid={selectedKid}
             data={data}
+            mode={effectiveMode}
             onBack={() => setCurrentView('dashboard')}
           />
         )}

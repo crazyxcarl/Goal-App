@@ -127,6 +127,14 @@
   color: var(--text-primary);
 }
 
+.sel-goal-credits {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 .sel-task-summary {
   font-size: 0.9rem;
   font-weight: 700;

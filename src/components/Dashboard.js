@@ -302,9 +302,14 @@ const KidCard = ({ kid, data, mode, onSelect, onStore, onSelections, variants })
                 </div>
               );
             })()}
-            <button className="neon-button selections-button" onClick={onSelections}>
-              📋 VIEW SELECTIONS
-            </button>
+            <motion.button
+              className="neon-button selections-button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={(e) => { e.stopPropagation(); onSelections(); }}
+            >
+              📋 VIEW STATUS
+            </motion.button>
           </>
         ) : (
           <div className="ready-message">READY FOR ADVENTURE!</div>

@@ -5,30 +5,52 @@ import './KidSelections.css';
 
 const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐿️', Brooke: '🐱' };
 
-const KidSelections = ({ kid, data, onBack }) => {
+const KidSelections = ({ kid, data, mode, onBack }) => {
   const choices = data.choices[kid] || {};
 
-  const foodSections = [
-    { label: '🍳 Breakfast',        items: choices.breakfast || [] },
-    { label: '⭐ Special Breakfast', items: choices.special_breakfast || [] },
-    { label: '🍎 Snacks',           items: choices.snacks || [] },
-  ].filter(s => s.items.length > 0);
+  // ── Food (only for morning mode) ──────────────────────────────────────────
+  const showFood = mode === 'morning';
+  const foodSections = showFood
+    ? [
+        { label: '🍳 Breakfast',        items: choices.breakfast || [] },
+        { label: '⭐ Special Breakfast', items: choices.special_breakfast || [] },
+        { label: '🍎 Snacks',           items: choices.snacks || [] },
+      ].filter(s => s.items.length > 0)
+    : [];
 
-  const lunchItems = choices.school_lunch
-    ? [{ label: '🏫 Buying School Lunch', tag: true }]
-    : [
-        ...(choices.lunch_main || []).map(i => ({ label: i, tag: false })),
-        ...(choices.lunch_sides_healthy || []).map(i => ({ label: i, tag: false })),
-        ...(choices.lunch_sides_unhealthy || []).map(i => ({ label: i, tag: false })),
-      ];
+  const lunchItems = showFood
+    ? choices.school_lunch
+      ? [{ label: '🏫 Buying School Lunch', tag: true }]
+      : [
+          ...(choices.lunch_main || []).map(i => ({ label: i, tag: false })),
+          ...(choices.lunch_sides_healthy || []).map(i => ({ label: i, tag: false })),
+          ...(choices.lunch_sides_unhealthy || []).map(i => ({ label: i, tag: false })),
+        ]
+    : [];
 
+  const hasFood = foodSections.length > 0 || lunchItems.length > 0;
+
+  // ── Tasks (only current mode's tasks) ─────────────────────────────────────
+  const modeTaskList = data.tasks?.[mode]?.[kid] || [];
   const checklist = choices.checklist || {};
-  const taskEntries = Object.entries(checklist);
+  const taskEntries = modeTaskList.map(t => [t, !!checklist[t]]);
 
-  const goals = data.goals?.[kid] || [];
+  // ── Goals (only show completed ones from goal_log) ────────────────────────
+  const today = new Date().toISOString().split('T')[0];
+  const goalLog = data.goal_log?.[kid] || [];
+  const completedGoalNames = new Set(
+    goalLog
+      .filter(entry => {
+        const date = typeof entry === 'object' && entry.date ? entry.date : null;
+        return date === today;
+      })
+      .map(entry => (typeof entry === 'string' ? entry : entry.name))
+  );
+  const completedGoals = (data.goals?.[kid] || [])
+    .map(g => (typeof g === 'string' ? { name: g, credits: 1 } : g))
+    .filter(g => completedGoalNames.has(g.name));
 
-  const hasAnything =
-    foodSections.length > 0 || lunchItems.length > 0 || taskEntries.length > 0;
+  const hasAnything = hasFood || taskEntries.length > 0 || completedGoals.length > 0;
 
   return (
     <motion.div
@@ -43,21 +65,21 @@ const KidSelections = ({ kid, data, onBack }) => {
           <FaArrowLeft /> Back
         </button>
         <h1 className="selections-title gradient-text">
-          {KID_EMOJIS[kid]} {kid.toUpperCase()}'S SELECTIONS
+          {KID_EMOJIS[kid]} {kid.toUpperCase()}'S STATUS
         </h1>
         <div style={{ width: '100px' }} />
       </div>
 
       {!hasAnything ? (
         <div className="selections-empty">
-          <p>No selections saved yet for {kid}.</p>
-          <p>Have them complete their quest first!</p>
+          <p>No quest activity yet for {kid}.</p>
+          <p>Have them start their quest first!</p>
         </div>
       ) : (
         <div className="selections-grid">
 
-          {/* Food Card */}
-          {(foodSections.length > 0 || lunchItems.length > 0) && (
+          {/* Food Card — morning only */}
+          {hasFood && (
             <motion.div
               className="sel-card glass-card"
               initial={{ x: -40, opacity: 0 }}
@@ -95,7 +117,7 @@ const KidSelections = ({ kid, data, onBack }) => {
             </motion.div>
           )}
 
-          {/* Tasks Card */}
+          {/* Tasks Card — current mode only */}
           {taskEntries.length > 0 && (
             <motion.div
               className="sel-card glass-card"
@@ -103,7 +125,9 @@ const KidSelections = ({ kid, data, onBack }) => {
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.15 }}
             >
-              <h2 className="sel-card-title">TASK STATUS 📋</h2>
+              <h2 className="sel-card-title">
+                {mode.toUpperCase()} TASK STATUS 📋
+              </h2>
               <div className="sel-task-list">
                 {taskEntries.map(([task, done]) => (
                   <div key={task} className={`sel-task-item ${done ? 'done' : ''}`}>
@@ -118,20 +142,21 @@ const KidSelections = ({ kid, data, onBack }) => {
             </motion.div>
           )}
 
-          {/* Goals Card (weekend) */}
-          {goals.length > 0 && (
+          {/* Completed Goals — today only */}
+          {completedGoals.length > 0 && (
             <motion.div
               className="sel-card glass-card"
               initial={{ y: 40, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <h2 className="sel-card-title">WEEKEND GOALS 🎯</h2>
+              <h2 className="sel-card-title">GOALS COMPLETED 🎯</h2>
               <div className="sel-task-list">
-                {goals.map((goal, i) => (
-                  <div key={i} className="sel-task-item">
-                    <span className="sel-task-check">⭐</span>
-                    <span className="sel-task-label">{goal}</span>
+                {completedGoals.map((goal, i) => (
+                  <div key={i} className="sel-task-item done">
+                    <span className="sel-task-check">✅</span>
+                    <span className="sel-task-label">{goal.name}</span>
+                    <span className="sel-goal-credits">+{goal.credits} ✨</span>
                   </div>
                 ))}
               </div>
