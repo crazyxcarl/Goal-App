@@ -54,6 +54,7 @@ function App() {
           { id: '5', name: 'Movie Night Pick', cost: 6 },
         ],
         goal_log: { Jackson: [], Natalie: [], Brooke: [] },
+        prev_morning_choices: {},
         config: { am_hour: 7, am_min: 20, pm_hour: 19, pm_min: 0 }
       };
       setData(defaultData);
@@ -76,35 +77,77 @@ function App() {
     const hour = now.getHours();
     const minute = now.getMinutes();
 
-    const isPostPM = hour > config.pm_hour || (hour === config.pm_hour && minute >= config.pm_min);
-    const isPreAM = hour < config.am_hour || (hour === config.am_hour && minute < config.am_min);
-
-    const isWeekend = (dayOfWeek === 5 && isPostPM) || dayOfWeek === 6 || (dayOfWeek === 0 && !isPostPM);
+    const pmMinutes = config.pm_hour * 60 + (config.pm_min || 0);
+    const amMinutes = config.am_hour * 60 + (config.am_min || 0);
+    const nowMinutes = hour * 60 + minute;
 
     let newMode;
-    if (isWeekend) {
-      newMode = 'weekend';
+    if (pmMinutes <= amMinutes) {
+      // Morning window is within the same day (e.g., 5:00 AM to 7:25 AM)
+      const inMorningWindow = nowMinutes >= pmMinutes && nowMinutes < amMinutes;
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+      if (isWeekend) {
+        newMode = 'weekend';
+      } else if (inMorningWindow) {
+        newMode = 'morning';
+      } else {
+        newMode = 'afternoon';
+      }
     } else {
-      const isMorning = ([0, 1, 2, 3, 4].includes(dayOfWeek) && isPostPM) ||
-                        ([1, 2, 3, 4, 5].includes(dayOfWeek) && isPreAM);
-      newMode = isMorning ? 'morning' : 'afternoon';
+      // Morning window spans midnight (e.g., 7:20 PM to 7:20 AM)
+      const isPostPM = nowMinutes >= pmMinutes;
+      const isPreAM = nowMinutes < amMinutes;
+      const isWeekend = (dayOfWeek === 5 && isPostPM) || dayOfWeek === 6 || (dayOfWeek === 0 && !isPostPM);
+
+      if (isWeekend) {
+        newMode = 'weekend';
+      } else {
+        const isMorning = ([0, 1, 2, 3, 4].includes(dayOfWeek) && isPostPM) ||
+                          ([1, 2, 3, 4, 5].includes(dayOfWeek) && isPreAM);
+        newMode = isMorning ? 'morning' : 'afternoon';
+      }
     }
 
-    // Clear food selections when transitioning into afternoon
-    if (prevModeRef.current !== null && prevModeRef.current !== 'afternoon' && newMode === 'afternoon') {
+    // Clear food selections and task checklist when transitioning between modes
+    if (prevModeRef.current !== null && prevModeRef.current !== newMode) {
       const updated = { ...data, choices: { ...data.choices } };
+
+      // Snapshot morning food selections before clearing them
+      if (newMode === 'afternoon') {
+        const snapshot = { ...(data.prev_morning_choices || {}) };
+        data.kids.forEach(kid => {
+          const c = data.choices[kid];
+          if (c) {
+            snapshot[kid] = {
+              breakfast:             c.breakfast || [],
+              special_breakfast:     c.special_breakfast || [],
+              snacks:                c.snacks || [],
+              lunch_main:            c.lunch_main || [],
+              lunch_sides_healthy:   c.lunch_sides_healthy || [],
+              lunch_sides_unhealthy: c.lunch_sides_unhealthy || [],
+              school_lunch:          c.school_lunch || false,
+            };
+          }
+        });
+        updated.prev_morning_choices = snapshot;
+      }
+
       data.kids.forEach(kid => {
         if (updated.choices[kid]) {
-          updated.choices[kid] = {
-            ...updated.choices[kid],
-            breakfast: [],
-            special_breakfast: [],
-            snacks: [],
-            lunch_main: [],
-            lunch_sides_healthy: [],
-            lunch_sides_unhealthy: [],
-            school_lunch: false,
-          };
+          const resets = { checklist: {} };
+          if (newMode === 'afternoon') {
+            Object.assign(resets, {
+              breakfast: [],
+              special_breakfast: [],
+              snacks: [],
+              lunch_main: [],
+              lunch_sides_healthy: [],
+              lunch_sides_unhealthy: [],
+              school_lunch: false,
+            });
+          }
+          updated.choices[kid] = { ...updated.choices[kid], ...resets };
         }
       });
       saveData(updated);

@@ -9,6 +9,7 @@ const KID_EMOJIS = { Jackson: '🐶', Natalie: '🐿️', Brooke: '🐱' };
 
 const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showReorder, setShowReorder] = useState(false);
   const [foodStep, setFoodStep] = useState(0);
   const [menuImage, setMenuImage] = useState(null);
   const [menuZoom, setMenuZoom] = useState(1);
@@ -65,6 +66,58 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
 
   const taskList = (data.tasks?.[mode]?.[kid] || []).slice().sort((a, b) => a.localeCompare(b));
   const food = data.food || {};
+
+  // --- Reorder Yesterday's Selections ---
+  const rawPrev = (data.prev_morning_choices || {})[kid];
+  const foodCategories = ['breakfast', 'special_breakfast', 'snacks', 'lunch_main', 'lunch_sides_healthy', 'lunch_sides_unhealthy'];
+  const inStockSet = {};
+  foodCategories.forEach(cat => {
+    inStockSet[cat] = new Set(
+      (food[cat] || []).filter(i => typeof i === 'string' || i.inStock).map(i => typeof i === 'string' ? i : i.name)
+    );
+  });
+
+  const prevChoices = rawPrev ? (() => {
+    const filtered = {};
+    const unavailable = {};
+    let hasAny = false;
+    foodCategories.forEach(cat => {
+      const items = rawPrev[cat] || [];
+      if (Array.isArray(items)) {
+        filtered[cat] = items.filter(i => inStockSet[cat].has(i));
+        const missing = items.filter(i => !inStockSet[cat].has(i));
+        if (missing.length) unavailable[cat] = missing;
+        if (filtered[cat].length) hasAny = true;
+      }
+    });
+    filtered.school_lunch = rawPrev.school_lunch || false;
+    if (filtered.school_lunch) hasAny = true;
+    return hasAny ? { filtered, unavailable, hasUnavailable: Object.keys(unavailable).length > 0 } : null;
+  })() : null;
+
+  const hasPrevChoices = mode === 'morning' && prevChoices !== null;
+
+  const categoryLabels = {
+    breakfast: '🍳 Breakfast',
+    special_breakfast: '⭐ Special Breakfast',
+    snacks: '🍎 Snacks',
+    lunch_main: '🥪 Lunch Main',
+    lunch_sides_healthy: '🥦 Healthy Sides',
+    lunch_sides_unhealthy: '🍟 Treat Side',
+  };
+
+  const handleConfirmReorder = () => {
+    const { filtered } = prevChoices;
+    setSelections(prev => {
+      const next = { ...prev };
+      foodCategories.forEach(cat => {
+        next[cat] = toMap(filtered[cat]);
+      });
+      next.school_lunch = filtered.school_lunch;
+      return next;
+    });
+    setShowReorder(false);
+  };
 
   const toggleFood = (category, item, limit) => {
     setSelections(prev => {
@@ -351,6 +404,73 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
                   ))}
                 </div>
               </div>
+
+              {/* Reorder Yesterday's Selections */}
+              {hasPrevChoices && !showReorder && (
+                <motion.button
+                  className="neon-button reorder-btn"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => setShowReorder(true)}
+                >
+                  🔄 Reorder Yesterday's Selections
+                </motion.button>
+              )}
+
+              <AnimatePresence>
+                {showReorder && hasPrevChoices && (
+                  <motion.div
+                    className="reorder-panel glass-card"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    <h3 className="reorder-title">Yesterday's Selections</h3>
+
+                    {foodCategories.map(cat => {
+                      const items = prevChoices.filtered[cat];
+                      if (!items || !items.length) return null;
+                      return (
+                        <div key={cat} className="reorder-section">
+                          <span className="reorder-section-label">{categoryLabels[cat]}</span>
+                          <div className="reorder-tags">
+                            {items.map(item => (
+                              <span key={item} className="reorder-tag">{item}</span>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {prevChoices.filtered.school_lunch && (
+                      <div className="reorder-section">
+                        <span className="reorder-section-label">🏫 Lunch Plan</span>
+                        <div className="reorder-tags">
+                          <span className="reorder-tag">Buying School Lunch</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {prevChoices.hasUnavailable && (
+                      <p className="reorder-warning">
+                        ⚠️ Some items are no longer in stock and have been removed:
+                        {Object.entries(prevChoices.unavailable).map(([cat, items]) => (
+                          <span key={cat}> {categoryLabels[cat]}: {items.join(', ')}.</span>
+                        ))}
+                      </p>
+                    )}
+
+                    <div className="reorder-actions">
+                      <button className="neon-button reorder-confirm-btn" onClick={handleConfirmReorder}>
+                        ✅ Confirm
+                      </button>
+                      <button className="neon-button reorder-decline-btn" onClick={() => setShowReorder(false)}>
+                        ✕ Decline
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <AnimatePresence mode="wait">
                 <motion.div

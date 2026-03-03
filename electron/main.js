@@ -176,6 +176,7 @@ ipcMain.handle('load-data', async () => {
     redeemed:     { Jackson: [], Natalie: [], Brooke: [] },
     goal_log:     { Jackson: [], Natalie: [], Brooke: [] },
     completion_log: { Jackson: [], Natalie: [], Brooke: [] },
+    prev_morning_choices: {},
     config: { am_hour: 7, am_min: 20, pm_hour: 19, pm_min: 0, credits_per_goal: 1, password: '1234' },
   };
 

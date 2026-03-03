@@ -488,6 +488,104 @@
   gap: 0.75rem;
 }
 
+/* Reorder Yesterday's Selections */
+.reorder-btn {
+  width: 100%;
+  padding: 0.7rem;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.3), rgba(0, 212, 255, 0.2));
+  border: 2px solid rgba(138, 43, 226, 0.5);
+}
+
+.reorder-btn:hover {
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.45), rgba(0, 212, 255, 0.35));
+  border-color: rgba(138, 43, 226, 0.7);
+}
+
+.reorder-panel {
+  padding: 1.25rem;
+  margin-bottom: 0.75rem;
+  background: rgba(138, 43, 226, 0.08);
+  border: 1px solid rgba(138, 43, 226, 0.25);
+  overflow: hidden;
+}
+
+.reorder-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  margin: 0 0 0.75rem 0;
+}
+
+.reorder-section {
+  margin-bottom: 0.6rem;
+}
+
+.reorder-section-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.reorder-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.reorder-tag {
+  padding: 0.3rem 0.75rem;
+  background: rgba(0, 212, 255, 0.12);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.reorder-warning {
+  font-size: 0.8rem;
+  color: var(--accent-gold);
+  background: rgba(255, 215, 0, 0.08);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0 0 0;
+  line-height: 1.4;
+}
+
+.reorder-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.reorder-confirm-btn {
+  flex: 1;
+  padding: 0.6rem;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 200, 100, 0.15));
+  border-color: var(--success);
+}
+
+.reorder-confirm-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.35), rgba(0, 200, 100, 0.25));
+}
+
+.reorder-decline-btn {
+  flex: 1;
+  padding: 0.6rem;
+  font-size: 0.9rem;
+  background: rgba(255, 56, 96, 0.15);
+  border-color: var(--danger);
+}
+
+.reorder-decline-btn:hover {
+  background: rgba(255, 56, 96, 0.25);
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
   .quest-content {
