@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaArrowLeft, FaTrash, FaPlus, FaTimes, FaSync, FaKey, FaCheck, FaBan } from 'react-icons/fa';
+import { FaArrowLeft, FaTrash, FaPlus, FaTimes, FaSync, FaKey, FaCheck, FaBan, FaPrint } from 'react-icons/fa';
 import './AdminPanel.css';
 
 const toTimeString = (hour, min) =>
@@ -242,6 +242,71 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
     }
   };
 
+  const handlePrint = () => {
+    const modes = ['morning', 'afternoon', 'weekend'];
+    const food = data.food || {};
+    const inStock = (items) => (items || [])
+      .filter(i => typeof i === 'string' || i.inStock)
+      .map(i => typeof i === 'string' ? i : i.name)
+      .sort((a, b) => a.localeCompare(b));
+
+    let html = `<html><head><title>Quest Sheets</title><style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: Arial, sans-serif; font-size: 13px; color: #222; }
+      .page { page-break-after: always; padding: 24px; }
+      .page:last-child { page-break-after: auto; }
+      h1 { font-size: 22px; text-align: center; margin-bottom: 4px; }
+      .date { text-align: center; color: #666; margin-bottom: 16px; font-size: 12px; }
+      h2 { font-size: 15px; margin: 12px 0 6px; border-bottom: 1px solid #ccc; padding-bottom: 2px; }
+      h3 { font-size: 13px; margin: 8px 0 4px; color: #555; }
+      .task-list { list-style: none; columns: 2; column-gap: 20px; }
+      .task-list li { padding: 3px 0; break-inside: avoid; }
+      .task-list li::before { content: '\\2610  '; font-size: 15px; }
+      .food-section { margin-bottom: 6px; }
+      .food-items { list-style: none; columns: 3; column-gap: 16px; }
+      .food-items li { padding: 2px 0; break-inside: avoid; }
+      .food-items li::before { content: '\\2610  '; font-size: 14px; }
+      .lunch-choice { margin: 4px 0; font-size: 13px; }
+      .lunch-choice::before { content: '\\2610  '; font-size: 14px; }
+      @media print { body { -webkit-print-color-adjust: exact; } }
+    </style></head><body>`;
+
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+    data.kids.forEach(kid => {
+      html += `<div class="page">`;
+      html += `<h1>${kid}'s Quest Sheet</h1>`;
+      html += `<div class="date">${today}</div>`;
+
+      modes.forEach(m => {
+        const tasks = (data.tasks?.[m]?.[kid] || []).slice().sort((a, b) => a.localeCompare(b));
+        if (tasks.length === 0) return;
+        html += `<h2>${m.charAt(0).toUpperCase() + m.slice(1)} Tasks</h2>`;
+        html += `<ul class="task-list">${tasks.map(t => `<li>${t}</li>`).join('')}</ul>`;
+      });
+
+      html += `<h2>Fuel Selection</h2>`;
+      FOOD_CATEGORIES.forEach(cat => {
+        const items = inStock(food[cat.key]);
+        if (items.length === 0) return;
+        html += `<div class="food-section"><h3>${cat.label}</h3>`;
+        html += `<ul class="food-items">${items.map(i => `<li>${i}</li>`).join('')}</ul></div>`;
+      });
+      html += `<div class="food-section"><h3>Lunch Plan</h3>`;
+      html += `<div class="lunch-choice">Packing Lunch</div>`;
+      html += `<div class="lunch-choice">Buying School Lunch</div></div>`;
+
+      html += `</div>`;
+    });
+
+    html += `</body></html>`;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.onload = () => printWindow.print();
+  };
+
   return (
     <motion.div
       className="admin-panel"
@@ -262,7 +327,9 @@ const AdminPanel = ({ data, onSave, onReload, onBack, modeOverride, onModeOverri
           🛠️ ADMIN CONTROL PANEL
         </motion.h1>
         
-        <div style={{ width: '100px' }}></div>
+        <button className="icon-button print-button" onClick={handlePrint}>
+          <FaPrint /> Print
+        </button>
       </div>
 
       <div className="admin-content">
