@@ -232,6 +232,11 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
       { date: today, time: now, mode },
     ];
 
+    // Award credits for quest completion
+    const creditsPerGoal = data.config?.credits_per_goal ?? 1;
+    newData.credits = { ...newData.credits };
+    newData.credits[kid] = (newData.credits[kid] || 0) + creditsPerGoal;
+
     onSave(newData);
     setShowCelebration(true);
   };
