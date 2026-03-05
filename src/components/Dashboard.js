@@ -60,9 +60,7 @@ const Dashboard = ({ data, mode, onKidSelect, onStoreSelect, onSelectionsSelect,
 
     const target = new Date();
     target.setHours(config.am_hour, config.am_min, 0, 0);
-    if (now.getHours() >= config.pm_hour) {
-      target.setDate(target.getDate() + 1);
-    } else if (now > target) {
+    if (now > target) {
       target.setDate(target.getDate() + 1);
     }
 

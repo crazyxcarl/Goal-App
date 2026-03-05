@@ -15,7 +15,11 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
   const [menuZoom, setMenuZoom] = useState(1);
   const [menuPan,  setMenuPan]  = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [showApproval, setShowApproval] = useState(false);
+  const [approvalPassword, setApprovalPassword] = useState('');
+  const [approvalError, setApprovalError] = useState(false);
   const dragRef = useRef(null);
+  const pendingDataRef = useRef(null);
 
   const handleViewMenu = async () => {
     if (menuImage) { setMenuImage(menuImage); return; }
@@ -188,31 +192,48 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
     const allComplete = allTasksComplete && allFoodComplete;
 
     if (allComplete && (isOverride || !newData.completion_times[kid])) {
-      if (isOverride) {
-        // Test mode — celebrate but don't record anything permanent
-        onSave(newData);
-        setShowCelebration(true);
-        return;
-      }
-
-      const now = Date.now();
-      newData.completion_times[kid] = now;
-
-      // Log this completion for stats
-      if (!newData.completion_log) newData.completion_log = {};
-      if (!newData.completion_log[kid]) newData.completion_log[kid] = [];
-      newData.completion_log[kid] = [
-        ...newData.completion_log[kid],
-        { date: today, time: now, mode },
-      ];
-
-      onSave(newData);
-      setShowCelebration(true);
+      // Store prepared data and show parent approval modal
+      pendingDataRef.current = { newData, today };
+      setShowApproval(true);
       return;
     }
 
     onSave(newData);
     onBack();
+  };
+
+  const handleApprove = () => {
+    const correct = data.config?.password || '1234';
+    if (approvalPassword !== correct) {
+      setApprovalError(true);
+      setApprovalPassword('');
+      return;
+    }
+
+    setShowApproval(false);
+    setApprovalPassword('');
+    setApprovalError(false);
+
+    const { newData, today } = pendingDataRef.current;
+
+    if (isOverride) {
+      onSave(newData);
+      setShowCelebration(true);
+      return;
+    }
+
+    const now = Date.now();
+    newData.completion_times[kid] = now;
+
+    if (!newData.completion_log) newData.completion_log = {};
+    if (!newData.completion_log[kid]) newData.completion_log[kid] = [];
+    newData.completion_log[kid] = [
+      ...newData.completion_log[kid],
+      { date: today, time: now, mode },
+    ];
+
+    onSave(newData);
+    setShowCelebration(true);
   };
 
   const completedCount = taskList.filter(t => selections.tasks[t]).length;
@@ -224,6 +245,32 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
         <CelebrationOverlay key="celebration" kid={kid} onDone={onBack} />
       )}
     </AnimatePresence>
+
+    {/* Parent Approval Modal */}
+    {showApproval && (
+      <div className="password-overlay" onClick={() => { setShowApproval(false); setApprovalPassword(''); setApprovalError(false); }}>
+        <div className="password-modal glass-card" onClick={e => e.stopPropagation()}>
+          <h2>🔒 Parent Approval</h2>
+          <p style={{ color: 'var(--text-secondary)', textAlign: 'center', margin: 0 }}>
+            Confirm {kid} completed all {mode} quest tasks
+          </p>
+          <input
+            className="password-input"
+            type="password"
+            placeholder="Enter password"
+            value={approvalPassword}
+            onChange={e => { setApprovalPassword(e.target.value); setApprovalError(false); }}
+            onKeyDown={e => e.key === 'Enter' && handleApprove()}
+            autoFocus
+          />
+          {approvalError && <p className="password-error">Incorrect password</p>}
+          <div className="password-actions">
+            <button className="neon-button" onClick={handleApprove}>Approve</button>
+            <button className="icon-button" onClick={() => { setShowApproval(false); setApprovalPassword(''); setApprovalError(false); }}>Cancel</button>
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* School Menu Modal */}
     <AnimatePresence>
