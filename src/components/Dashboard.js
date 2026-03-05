@@ -207,7 +207,7 @@ const KidCard = ({ kid, data, mode, onSelect, onStore, onSelections, variants })
       { available: (food.breakfast || []).length > 0,            done: (choices.breakfast || []).length > 0 },
       { available: (food.special_breakfast || []).length > 0,    done: (choices.special_breakfast || []).length > 0 },
       { available: (food.snacks || []).length > 0,               done: (choices.snacks || []).length > 0 },
-      { available: true,                                         done: true }, // school_lunch toggle always decided
+      { available: true,                                         done: schoolLunch !== null && schoolLunch !== undefined },
       ...(!schoolLunch ? [
         { available: (food.lunch_main || []).length > 0,           done: (choices.lunch_main || []).length > 0 },
         { available: (food.lunch_sides_healthy || []).length > 0,  done: (choices.lunch_sides_healthy || []).length > 0 },

@@ -65,7 +65,7 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
     lunch_sides_unhealthy: toMap(saved.lunch_sides_unhealthy),
     snacks:                toMap(saved.snacks),
     tasks:                 saved.checklist || {},
-    school_lunch:          saved.school_lunch || false,
+    school_lunch:          saved.school_lunch ?? null,
   });
 
   const taskList = (data.tasks?.[mode]?.[kid] || []).slice().sort((a, b) => a.localeCompare(b));
@@ -547,14 +547,14 @@ const KidQuest = ({ kid, data, mode, isOverride, onSave, onBack }) => {
                     <div>
                       <div className="school-lunch-options">
                         <button
-                          className={`food-option school-lunch-btn ${!selections.school_lunch ? 'selected' : ''}`}
-                          onClick={() => setSelections(prev => ({ ...prev, school_lunch: false }))}
+                          className={`food-option school-lunch-btn ${selections.school_lunch === false ? 'selected' : ''}`}
+                          onClick={() => setSelections(prev => ({ ...prev, school_lunch: prev.school_lunch === false ? null : false }))}
                         >
                           🎒 Packing Lunch
                         </button>
                         <button
-                          className={`food-option school-lunch-btn ${selections.school_lunch ? 'selected' : ''}`}
-                          onClick={() => setSelections(prev => ({ ...prev, school_lunch: true }))}
+                          className={`food-option school-lunch-btn ${selections.school_lunch === true ? 'selected' : ''}`}
+                          onClick={() => setSelections(prev => ({ ...prev, school_lunch: prev.school_lunch === true ? null : true }))}
                         >
                           🏫 Buying School Lunch
                         </button>
